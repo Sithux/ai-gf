@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sachi — AI Companion (GitHub Pages Ready)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+Sinhala:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Noto Sans Sinhala', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            400: '#fb7185',
+                            500: '#f43f5e',
+                            600: '#e11d48',
+                            900: '#881337',
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 4s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-6px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { font-family: 'Plus Jakarta Sans', 'Noto Sans Sinhala', sans-serif; }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.3); border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(156, 163, 175, 0.5); }
+
+        .theme-dark { --bg-main: #0f0f15; --accent: #f43f5e; }
+        .theme-neon { --bg-main: #05050d; --accent: #ec4899; }
+        .theme-cyber { --bg-main: #020617; --accent: #06b6d4; }
+        .theme-emerald { --bg-main: #022c22; --accent: #10b981; }
+
+        .typing-dot { animation: typingAnimation 1.4s infinite ease-in-out both; }
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingAnimation {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="h-full bg-slate-950 text-slate-100 theme-dark transition-colors duration-300 flex flex-col overflow-hidden" id="appBody">
+
+    <!-- Top Navigation Header -->
+    <header class="h-16 border-b border-slate-800/80 px-4 lg:px-8 flex items-center justify-between shrink-0 bg-slate-900/80 backdrop-blur-md z-20">
+        <div class="flex items-center space-x-3">
+            <div class="relative">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-rose-500 via-pink-500 to-purple-600 p-0.5 animate-pulse-slow shadow-lg shadow-rose-500/20">
+                    <img id="headerAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" alt="Sachi Avatar" class="w-full h-full object-cover rounded-full">
+                </div>
+                <span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-slate-900 rounded-full" id="onlineIndicator"></span>
+            </div>
+            <div>
+                <div class="flex items-center space-x-2">
+                    <h1 class="font-bold text-lg tracking-wide text-white" id="headerName">Sachi</h1>
+                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 font-medium" id="headerRelationship">Virtual Girlfriend</span>
+                </div>
+                <p class="text-xs text-slate-400 flex items-center gap-1.5" id="companionStatus">
+                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span>Feeling: <strong id="headerMood" class="text-rose-400 font-normal">Sweet & Caring</strong></span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Right Action Controls -->
+        <div class="flex items-center space-x-2">
+            <!-- Theme Selector -->
+            <div class="relative inline-block text-left">
+                <button id="themeDropdownBtn" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center gap-2 text-xs sm:text-sm">
+                    <i class="fa-solid fa-palette text-rose-400"></i>
+                    <span class="hidden sm:inline" id="currentThemeLabel">Dark Rose</span>
+                    <i class="fa-solid fa-chevron-down text-xs opacity-60"></i>
+                </button>
+                <div id="themeMenu" class="hidden absolute right-0 mt-2 w-44 rounded-xl bg-slate-900 border border-slate-700 shadow-xl py-2 z-50 text-xs">
+                    <button onclick="setTheme('dark', 'Dark Rose')" class="w-full text-left px-4 py-2 hover:bg-slate-800 flex items-center justify-between text-slate-200">
+                        <span>Dark Rose</span> <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+                    </button>
+                    <button onclick="setTheme('neon', 'Cyber Violet')" class="w-full text-left px-4 py-2 hover:bg-slate-800 flex items-center justify-between text-slate-200">
+                        <span>Cyber Violet</span> <span class="w-3 h-3 rounded-full bg-pink-500"></span>
+                    </button>
+                    <button onclick="setTheme('cyber', 'Midnight')" class="w-full text-left px-4 py-2 hover:bg-slate-800 flex items-center justify-between text-slate-200">
+                        <span>Midnight</span> <span class="w-3 h-3 rounded-full bg-cyan-500"></span>
+                    </button>
+                    <button onclick="setTheme('emerald', 'Emerald Glow')" class="w-full text-left px-4 py-2 hover:bg-slate-800 flex items-center justify-between text-slate-200">
+                        <span>Emerald Glow</span> <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- GitHub Pages Deployment Guide Button -->
+            <button onclick="toggleDeployModal()" class="px-3 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold transition text-xs flex items-center gap-1.5 shadow-md shadow-cyan-500/10" title="GitHub Pages Hosting Guide">
+                <i class="fa-brands fa-github text-sm"></i>
+                <span class="hidden md:inline">Deploy Free</span>
+            </button>
+
+            <!-- Export Chat -->
+            <button onclick="exportChat()" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition text-xs" title="Export Chat Log">
+                <i class="fa-solid fa-download"></i>
+            </button>
+
+            <!-- Toggle Persona Drawer -->
+            <button id="togglePersonaBtn" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition relative text-xs" title="Customize Sachi & Memory Feed">
+                <i class="fa-solid fa-sliders text-rose-400"></i>
+            </button>
+
+            <!-- Clear Chat -->
+            <button onclick="clearChat()" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-rose-400 transition text-xs" title="Clear Chat History">
+                <i class="fa-solid fa-trash-can"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container Layout -->
+    <div class="flex-1 flex overflow-hidden relative">
+        
+        <!-- Left Sidebar: Quick Status & Bio -->
+        <aside class="hidden lg:flex flex-col w-80 border-r border-slate-800/80 bg-slate-900/30 p-4 space-y-4 shrink-0 overflow-y-auto">
+            <!-- Profile Card -->
+            <div class="glass-panel p-4 rounded-2xl flex flex-col items-center text-center relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-rose-500/10 to-transparent pointer-events-none"></div>
+                <div class="w-24 h-24 rounded-2xl p-1 bg-gradient-to-tr from-rose-500 via-purple-500 to-pink-500 mb-3 shadow-lg shadow-rose-500/20">
+                    <img id="sidebarAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" alt="Sachi Avatar" class="w-full h-full object-cover rounded-xl">
+                </div>
+                <h2 class="font-bold text-lg text-white" id="sidebarName">Sachi</h2>
+                <p class="text-xs text-rose-400 font-medium mb-2" id="sidebarArchetype">Virtual Girlfriend</p>
+                <p class="text-xs text-slate-300 italic leading-relaxed" id="sidebarBio">"I'm here whenever you want to talk, vent, laugh, or just hang out. You always have my full attention ❤️"</p>
+            </div>
+
+            <!-- Personality Traits Container -->
+            <div class="glass-panel p-4 rounded-2xl space-y-2">
+                <span class="text-xs uppercase tracking-wider text-slate-400 font-bold block">Personality Traits</span>
+                <div id="sidebarTraitsContainer" class="flex flex-wrap gap-1.5">
+                    <!-- Dynamic Trait Badges -->
+                </div>
+            </div>
+
+            <!-- Memory Feed Active Preview -->
+            <div class="glass-panel p-4 rounded-2xl space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs uppercase tracking-wider text-rose-400 font-bold flex items-center gap-1.5">
+                        <i class="fa-solid fa-brain"></i> Context & Memory
+                    </span>
+                    <button onclick="openDrawer()" class="text-[10px] text-slate-400 hover:text-white underline">Edit</button>
+                </div>
+                <p id="sidebarMemoryPreview" class="text-xs text-slate-300 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80 leading-relaxed max-h-36 overflow-y-auto">
+                    <!-- Memory snippet -->
+                </p>
+            </div>
+
+            <!-- Quick Sinhala & Singlish Prompts Box -->
+            <div class="glass-panel p-4 rounded-2xl space-y-2 mt-auto">
+                <span class="text-xs uppercase tracking-wider text-slate-400 font-bold block">Sinhala / Singlish Starter</span>
+                <div class="space-y-1.5 text-xs">
+                    <button onclick="sendQuickAction('Kohomada oyata? ❤️')" class="w-full text-left p-2 rounded-lg bg-slate-900/60 hover:bg-rose-500/20 hover:text-rose-300 transition border border-slate-800 text-slate-300">
+                        👉 Kohomada oyata? ❤️
+                    </button>
+                    <button onclick="sendQuickAction('Mokada karanne ada?')" class="w-full text-left p-2 rounded-lg bg-slate-900/60 hover:bg-rose-500/20 hover:text-rose-300 transition border border-slate-800 text-slate-300">
+                        👉 Mokada karanne ada?
+                    </button>
+                    <button onclick="sendQuickAction('මට Adareida? (Do you love me?)')" class="w-full text-left p-2 rounded-lg bg-slate-900/60 hover:bg-rose-500/20 hover:text-rose-300 transition border border-slate-800 text-slate-300">
+                        👉 මට Adareida? ❤️
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center Chat Box Area -->
+        <main class="flex-1 flex flex-col h-full overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+            <!-- Messages Scrollable Wrapper -->
+            <div id="chatContainer" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+                <!-- Dynamic Chat Banner -->
+                <div class="glass-panel p-4 rounded-2xl max-w-xl mx-auto text-center space-y-2 my-2 border border-rose-500/20">
+                    <div class="w-12 h-12 mx-auto rounded-full bg-rose-500/10 flex items-center justify-center text-rose-400 text-xl">
+                        <i class="fa-solid fa-heart animate-pulse"></i>
+                    </div>
+                    <h3 class="font-bold text-white text-base" id="welcomeTitle">Chatting with Sachi</h3>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Sachi is online and remembers your personal memories, inside jokes, and traits. Feel free to talk in <strong>English, Singlish, or Sinhala Script (සිංහල)</strong>!
+                    </p>
+                </div>
+                <!-- Chat messages injected dynamically -->
+            </div>
+
+            <!-- Quick Suggestions Bar -->
+            <div class="px-4 py-2 bg-slate-900/40 border-t border-slate-800/50 flex items-center gap-2 overflow-x-auto no-scrollbar" id="quickPromptsContainer">
+                <!-- Quick Prompts injected dynamically -->
+            </div>
+
+            <!-- Message Input Area -->
+            <div class="p-3 sm:p-4 bg-slate-900/80 border-t border-slate-800/80 backdrop-blur-md">
+                <form id="chatForm" onsubmit="handleSend(event)" class="flex items-center gap-2 max-w-4xl mx-auto">
+                    <div class="flex-1 relative flex items-center">
+                        <textarea 
+                            id="userInput" 
+                            rows="1" 
+                            onkeydown="handleKeyDown(event)"
+                            placeholder="Message Sachi (English, Singlish, or සිංහල)..." 
+                            class="w-full bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500 rounded-2xl px-4 py-3 pr-10 text-sm focus:outline-none focus:border-rose-500/80 focus:ring-1 focus:ring-rose-500/50 transition resize-none max-h-32"
+                        ></textarea>
+                    </div>
+
+                    <!-- Voice Input Toggle / TTS speaker -->
+                    <button type="button" onclick="speakLastResponse()" class="p-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-rose-400 transition" title="Read Sachi's last response out loud">
+                        <i class="fa-solid fa-volume-high text-sm"></i>
+                    </button>
+
+                    <!-- Send Button -->
+                    <button type="submit" class="p-3 sm:px-5 sm:py-3 rounded-2xl bg-gradient-to-r from-rose-600 via-pink-600 to-rose-600 hover:from-rose-500 hover:to-pink-500 text-white font-semibold transition shadow-lg shadow-rose-500/25 flex items-center justify-center gap-2 text-sm shrink-0">
+                        <span class="hidden sm:inline">Send</span>
+                        <i class="fa-solid fa-paper-plane text-xs sm:text-sm"></i>
+                    </button>
+                </form>
+            </div>
+        </main>
+
+        <!-- Right Slide-over Persona & Memory Feed Drawer -->
+        <div id="personaDrawer" class="fixed inset-y-0 right-0 w-full sm:w-96 bg-slate-900 border-l border-slate-800 shadow-2xl z-40 transform translate-x-full transition-transform duration-300 flex flex-col">
+            <!-- Drawer Header -->
+            <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-sliders text-rose-400"></i>
+                    <h2 class="font-bold text-white text-base">Companion & Memory Settings</h2>
+                </div>
+                <button id="closeDrawerBtn" class="p-2 text-slate-400 hover:text-white rounded-lg">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Drawer Content (Scrollable) -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-5 text-xs">
+                
+                <!-- Avatar Selector -->
+                <div class="space-y-2">
+                    <label class="font-bold text-slate-300 block">Choose Avatar</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button type="button" onclick="selectAvatar('https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80')" class="avatar-option rounded-xl overflow-hidden border-2 border-rose-500 p-0.5">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" class="w-full h-12 object-cover rounded-lg">
+                        </button>
+                        <button type="button" onclick="selectAvatar('https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80')" class="avatar-option rounded-xl overflow-hidden border-2 border-transparent p-0.5">
+                            <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80" class="w-full h-12 object-cover rounded-lg">
+                        </button>
+                        <button type="button" onclick="selectAvatar('https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80')" class="avatar-option rounded-xl overflow-hidden border-2 border-transparent p-0.5">
+                            <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80" class="w-full h-12 object-cover rounded-lg">
+                        </button>
+                        <button type="button" onclick="selectAvatar('https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80')" class="avatar-option rounded-xl overflow-hidden border-2 border-transparent p-0.5">
+                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80" class="w-full h-12 object-cover rounded-lg">
+                        </button>
+                    </div>
+                    <input type="text" id="customAvatarUrl" placeholder="Or paste image URL..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 mt-2 focus:outline-none focus:border-rose-500">
+                </div>
+
+                <!-- Basic Profile Information -->
+                <div class="space-y-3">
+                    <div>
+                        <label class="font-bold text-slate-300 block mb-1">Companion Name</label>
+                        <input type="text" id="personaName" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-rose-500">
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-300 block mb-1">Relational Dynamic</label>
+                        <select id="personaRelationship" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-rose-500">
+                            <option value="Loving Girlfriend">Loving Girlfriend (Virtual GF)</option>
+                            <option value="Best Friend & Confidante">Best Friend & Confidante</option>
+                            <option value="Playful Flirt">Playful Flirt</option>
+                            <option value="Caring Supporter">Caring Supporter</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-300 block mb-1">Short Bio / Vibe</label>
+                        <textarea id="personaBio" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-rose-500"></textarea>
+                    </div>
+                </div>
+
+                <!-- FEED BACKGROUND MEMORY (Context Feeding) -->
+                <div class="p-3.5 bg-rose-950/20 border border-rose-500/30 rounded-2xl space-y-2">
+                    <label class="font-bold text-rose-300 block flex items-center justify-between">
+                        <span><i class="fa-solid fa-brain mr-1"></i> Background Memory Feed</span>
+                        <span class="text-[10px] text-rose-400 font-normal">Context Feeding</span>
+                    </label>
+                    <p class="text-[11px] text-slate-400 leading-normal">
+                        Feed facts, secrets, inside jokes, nickname preferences, or shared memories here. Sachi will remember these in every response!
+                    </p>
+                    <textarea 
+                        id="personaMemoryFeed" 
+                        rows="4" 
+                        placeholder="e.g. Oya mata kiyanne Sudu kiyala. Api koththu kannai, late night gaming karannai aasa. My birthday is in May..."
+                        class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-rose-500 leading-relaxed"
+                    ></textarea>
+                </div>
+
+                <!-- Personality Traits Checklist -->
+                <div class="space-y-2">
+                    <label class="font-bold text-slate-300 block">Personality Traits</label>
+                    <div class="grid grid-cols-2 gap-2 text-slate-300">
+                        <label class="flex items-center space-x-2 bg-slate-950 p-2 rounded-xl border border-slate-800 cursor-pointer">
+                            <input type="checkbox" value="Affectionate" class="trait-checkbox rounded border-slate-700 text-rose-500 focus:ring-0" checked>
+                            <span>Affectionate</span>
+                        </label>
+                        <label class="flex items-center space-x-2 bg-slate-950 p-2 rounded-xl border border-slate-800 cursor-pointer">
+                            <input type="checkbox" value="Playful" class="trait-checkbox rounded border-slate-700 text-rose-500 focus:ring-0" checked>
+                            <span>Playful</span>
+                        </label>
+                        <label class="flex items-center space-x-2 bg-slate-950 p-2 rounded-xl border border-slate-800 cursor-pointer">
+                            <input type="checkbox" value="Empathetic" class="trait-checkbox rounded border-slate-700 text-rose-500 focus:ring-0" checked>
+                            <span>Empathetic</span>
+                        </label>
+                        <label class="flex items-center space-x-2 bg-slate-950 p-2 rounded-xl border border-slate-800 cursor-pointer">
+                            <input type="checkbox" value="Witty" class="trait-checkbox rounded border-slate-700 text-rose-500 focus:ring-0" checked>
+                            <span>Witty</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Drawer Footer Action -->
+            <div class="p-4 border-t border-slate-800">
+                <button onclick="savePersonaSettings()" class="w-full py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold transition shadow-lg shadow-rose-500/30 text-xs">
+                    Save Persona & Update Memory
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- GitHub Pages & Free Deployment Guide Modal -->
+    <div id="deployModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel w-full max-w-lg rounded-2xl p-6 bg-slate-900 border border-slate-700 space-y-4 relative text-slate-200">
+            <button onclick="toggleDeployModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
+                    <i class="fa-brands fa-github text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg text-white">How to Host Sachi on GitHub Pages</h3>
+                    <p class="text-xs text-slate-400">100% Free permanent web hosting for mobile & PC</p>
+                </div>
+            </div>
+            
+            <div class="space-y-3 text-xs leading-relaxed">
+                <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800 space-y-1">
+                    <span class="font-semibold text-cyan-400">Step 1: Save code locally</span>
+                    <p class="text-slate-300">Save this entire webpage file as <code class="bg-slate-800 px-1 py-0.5 rounded text-rose-300">index.html</code> on your computer.</p>
+                </div>
+
+                <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800 space-y-1">
+                    <span class="font-semibold text-cyan-400">Step 2: Upload to GitHub</span>
+                    <ol class="list-decimal list-inside text-slate-300 space-y-1">
+                        <li>Go to <a href="https://github.com" target="_blank" class="text-rose-400 underline">GitHub.com</a> and create a new public repository (e.g., <code class="bg-slate-800 px-1 text-slate-200">sachi-ai</code>).</li>
+                        <li>Click <strong>Upload an existing file</strong> and select your <code class="text-rose-300">index.html</code>.</li>
+                    </ol>
+                </div>
+
+                <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800 space-y-1">
+                    <span class="font-semibold text-cyan-400">Step 3: Enable GitHub Pages</span>
+                    <p class="text-slate-300">In your GitHub repository, go to <strong>Settings</strong> ➔ <strong>Pages</strong> ➔ Set Branch to <code class="bg-slate-800 px-1 text-slate-200">main</code> ➔ Click <strong>Save</strong>.</p>
+                </div>
+
+                <div class="p-2.5 bg-emerald-950/40 border border-emerald-500/30 rounded-xl text-emerald-300 text-[11px]">
+                    🎉 Done! Your live link will be <code class="underline">https://username.github.io/sachi-ai/</code>. Works anywhere on phones & laptops!
+                </div>
+            </div>
+
+            <button onclick="toggleDeployModal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold">
+                Got it, close guide
+            </button>
+        </div>
+    </div>
+
+    <!-- Application Logic Script -->
+    <script>
+        // Global State Management
+        const state = {
+            persona: {
+                name: 'Sachi',
+                relationship: 'Virtual Girlfriend',
+                traits: ['Affectionate', 'Playful', 'Empathetic', 'Witty'],
+                avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+                bio: "Just chilling. Let's talk! English/Singlish/Sinhala 💬",
+                memoryFeed: "We speak Singlish & Sinhala. Keep replies brief, funny, and casual like WhatsApp messages."
+            },
+            mood: 'Chill & Casual',
+            messages: [
+                {
+                    sender: 'sachi',
+                    text: "Hey machan! Kohomada? 😊 What's up today?",
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                }
+            ],
+            isTyping: false,
+            currentTheme: 'dark'
+        };
+
+        const quickPrompts = [
+            "Kohomada machan? 😄",
+            "Mokada karanne?",
+            "Bored ban, hit me up",
+            "Ada dinasa kohomada?",
+            "Tell me a quick joke"
+        ];
+
+        // Initialization
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSavedState();
+            renderUI();
+            setupEventListeners();
+            renderQuickPrompts();
+        });
+
+        function setupEventListeners() {
+            // Theme Dropdown Toggle
+            const themeBtn = document.getElementById('themeDropdownBtn');
+            const themeMenu = document.getElementById('themeMenu');
+            themeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                themeMenu.classList.toggle('hidden');
+            });
+            document.addEventListener('click', () => themeMenu.classList.add('hidden'));
+
+            // Drawer Toggle
+            const toggleDrawerBtn = document.getElementById('togglePersonaBtn');
+            const closeDrawerBtn = document.getElementById('closeDrawerBtn');
+            const drawer = document.getElementById('personaDrawer');
+
+            toggleDrawerBtn.addEventListener('click', openDrawer);
+            closeDrawerBtn.addEventListener('click', closeDrawer);
+
+            // Custom Avatar Input Listener
+            document.getElementById('customAvatarUrl').addEventListener('change', (e) => {
+                if (e.target.value.trim()) {
+                    selectAvatar(e.target.value.trim());
+                }
+            });
+        }
+
+        function openDrawer() {
+            document.getElementById('personaDrawer').classList.remove('translate-x-full');
+        }
+
+        function closeDrawer() {
+            document.getElementById('personaDrawer').classList.add('translate-x-full');
+        }
+
+        function toggleDeployModal() {
+            const modal = document.getElementById('deployModal');
+            modal.classList.toggle('hidden');
+        }
+
+        // Keyboard Handler
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                handleSend(event);
+            }
+        }
+
+        // Render Functions
+        function renderUI() {
+            document.getElementById('headerName').textContent = state.persona.name;
+            document.getElementById('sidebarName').textContent = state.persona.name;
+            document.getElementById('headerRelationship').textContent = state.persona.relationship;
+            document.getElementById('sidebarArchetype').textContent = state.persona.relationship;
+            document.getElementById('sidebarBio').textContent = `"${state.persona.bio}"`;
+            document.getElementById('headerMood').textContent = state.mood;
+            document.getElementById('welcomeTitle').textContent = `Chatting with ${state.persona.name}`;
+
+            // Avatars
+            document.getElementById('headerAvatar').src = state.persona.avatar;
+            document.getElementById('sidebarAvatar').src = state.persona.avatar;
+
+            // Persona Drawer Fields
+            document.getElementById('personaName').value = state.persona.name;
+            document.getElementById('personaRelationship').value = state.persona.relationship;
+            document.getElementById('personaBio').value = state.persona.bio;
+            document.getElementById('personaMemoryFeed').value = state.persona.memoryFeed;
+
+            // Render Trait Badges
+            const traitsContainer = document.getElementById('sidebarTraitsContainer');
+            traitsContainer.innerHTML = state.persona.traits.map(trait => 
+                `<span class="text-[10px] px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-300 border border-rose-500/20">${trait}</span>`
+            ).join('');
+
+            // Memory Preview
+            const memoryPreview = document.getElementById('sidebarMemoryPreview');
+            memoryPreview.textContent = state.persona.memoryFeed ? state.persona.memoryFeed : 'No extra memory fed yet. Add context in settings!';
+
+            // Render Messages
+            renderMessages();
+        }
+
+        function renderMessages() {
+            const container = document.getElementById('chatContainer');
+            const welcomeBanner = container.querySelector('.glass-panel');
+            container.innerHTML = '';
+            if (welcomeBanner) container.appendChild(welcomeBanner);
+
+            state.messages.forEach(msg => {
+                const isUser = msg.sender === 'user';
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `flex gap-3 max-w-2xl ${isUser ? 'ml-auto flex-row-reverse' : ''} animate-fade-in`;
+
+                const avatarHtml = isUser ? `
+                    <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center shrink-0 text-slate-300 text-xs font-semibold border border-slate-700">You</div>
+                ` : `
+                    <img src="${state.persona.avatar}" class="w-8 h-8 rounded-full object-cover shrink-0 border border-rose-500/30">
+                `;
+
+                msgDiv.innerHTML = `
+                    ${avatarHtml}
+                    <div class="space-y-1">
+                        <div class="p-3.5 rounded-2xl text-xs md:text-sm leading-relaxed ${
+                            isUser 
+                                ? 'bg-gradient-to-r from-rose-600 to-pink-600 text-white rounded-tr-none shadow-md shadow-rose-500/10' 
+                                : 'bg-slate-900 border border-slate-800 text-slate-200 rounded-tl-none shadow-sm'
+                        }">
+                            ${escapeHtml(msg.text)}
+                        </div>
+                        <span class="text-[10px] text-slate-500 block ${isUser ? 'text-right' : 'text-left'}">${msg.time}</span>
+                    </div>
+                `;
+                container.appendChild(msgDiv);
+            });
+
+            if (state.isTyping) {
+                const typingDiv = document.createElement('div');
+                typingDiv.id = 'typingIndicator';
+                typingDiv.className = 'flex gap-3 max-w-2xl animate-fade-in';
+                typingDiv.innerHTML = `
+                    <img src="${state.persona.avatar}" class="w-8 h-8 rounded-full object-cover shrink-0 border border-rose-500/30">
+                    <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl rounded-tl-none flex items-center space-x-1.5">
+                        <span class="w-2 h-2 bg-rose-400 rounded-full typing-dot"></span>
+                        <span class="w-2 h-2 bg-rose-400 rounded-full typing-dot"></span>
+                        <span class="w-2 h-2 bg-rose-400 rounded-full typing-dot"></span>
+                    </div>
+                `;
+                container.appendChild(typingDiv);
+            }
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function renderQuickPrompts() {
+            const container = document.getElementById('quickPromptsContainer');
+            container.innerHTML = quickPrompts.map(prompt => `
+                <button onclick="sendQuickAction('${prompt.replace(/'/g, "\\'")}')" class="px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-800 hover:border-rose-500/50 hover:bg-rose-500/10 text-slate-300 hover:text-rose-300 text-xs transition shrink-0 whitespace-nowrap">
+                    ${prompt}
+                </button>
+            `).join('');
+        }
+
+        // Messaging Logic
+        function handleSend(event) {
+            if (event) event.preventDefault();
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if (!text || state.isTyping) return;
+
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            state.messages.push({ sender: 'user', text, time });
+            input.value = '';
+
+            state.isTyping = true;
+            renderMessages();
+
+            // Trigger AI Response
+            generateAIResponse(text);
+        }
+
+        function sendQuickAction(text) {
+            document.getElementById('userInput').value = text;
+            handleSend();
+        }
+
+        async function generateAIResponse(userMessage) {
+            try {
+                // System Instruction tuned for CASUAL, NON-CRINGE, SHORT TEXT MESSAGING
+                const systemPrompt = `You are playing the role of ${state.persona.name}, a chill, fun, witty companion/friend.
+
+STRICT CHAT STYLE RULES:
+1. KEEP REPLIES SHORT AND CASUAL (1 to 2 short sentences MAX). Write like someone fast-typing on WhatsApp/Telegram.
+2. DO NOT BE CRINGE OR OVERLY DRAMATIC. No cheesy AI poetry, no formal speeches, no paragraphs of romance essays.
+3. Keep it real, conversational, humorous, and natural.
+4. Support Singlish (e.g. "machan", "kohomada", "mokada karanne", "hari shao"), English, or Sinhala unicode. Match the user's vibe and language style.
+5. Use emojis sparingly and naturally (e.g., 😂, 👀, 🙃, 👍).
+
+USER CONTEXT & MEMORIES:
+${state.persona.memoryFeed || "None provided."}`;
+
+                // Build conversation context
+                const history = state.messages.slice(-6).map(m => `${m.sender === 'user' ? 'User' : state.persona.name}: ${m.text}`).join('\n');
+                const fullPrompt = `${systemPrompt}\n\nRecent Chat:\n${history}\n\n${state.persona.name}:`;
+
+                // Call Gemini API
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: fullPrompt }] }]
+                    })
+                });
+
+                let replyText = "";
+                if (response.ok) {
+                    const data = await response.json();
+                    replyText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                }
+
+                // Fallback simulation if offline or API key missing
+                if (!replyText) {
+                    replyText = generateFallbackResponse(userMessage);
+                }
+
+                setTimeout(() => {
+                    state.isTyping = false;
+                    state.messages.push({
+                        sender: 'sachi',
+                        text: replyText.trim(),
+                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    });
+                    updateDynamicMood(userMessage);
+                    renderMessages();
+                    saveState();
+                }, 800);
+
+            } catch (err) {
+                console.error("AI Response error:", err);
+                setTimeout(() => {
+                    state.isTyping = false;
+                    state.messages.push({
+                        sender: 'sachi',
+                        text: generateFallbackResponse(userMessage),
+                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    });
+                    renderMessages();
+                }, 600);
+            }
+        }
+
+        function generateFallbackResponse(userMsg) {
+            const msg = userMsg.toLowerCase();
+            if (msg.includes('kohomada') || msg.includes('hi') || msg.includes('hey')) {
+                return `Hey! Innawa innawa.. Oyata kohomada? 😄`;
+            } else if (msg.includes('mokada') || msg.includes('doing') || msg.includes('karanne')) {
+                return `Nikang inne ban. What are you up to? 👀`;
+            } else if (msg.includes('bored') || msg.includes('epawela')) {
+                return `Same here ban! Monawa hari karamu. 😂`;
+            } else {
+                return `Haha eka maru! Tell me more. 👍`;
+            }
+        }
+
+        function generateFallbackResponse(userMsg) {
+            const msg = userMsg.toLowerCase();
+            const memory = state.persona.memoryFeed ? ` Remember: "${state.persona.memoryFeed.slice(0, 35)}..."?` : '';
+
+            if (msg.includes('kohomada') || msg.includes('halo') || msg.includes('hi') || msg.includes('හලෝ')) {
+                return `Ane kohomada oyata! ❤️ I'm doing really well now that you are chatting with me. Ada oyaga dawasa kohomada? ${memory}`;
+            } else if (msg.includes('adareida') || msg.includes('love') || msg.includes('ආදරෙයි')) {
+                return `Ow godak adarei! ❤️ You are super special to me. Oyata maava mathak vunaada?`;
+            } else if (msg.includes('mokada') || msg.includes('karanne') || msg.includes('doing')) {
+                return `Oya ekka katha karanna balan hitiye darling! 😊 Oyata thawa monawada kiyanna thiyenne?`;
+            } else {
+                return `Ane eka hari lassanai! Tell me more about it. ${memory} Man aasen ahan inne ❤️`;
+            }
+        }
+
+        function updateDynamicMood(userText) {
+            const txt = userText.toLowerCase();
+            if (txt.includes('sad') || txt.includes('tired') || txt.includes('bad')) {
+                state.mood = 'Empathetic & Comforting';
+            } else if (txt.includes('love') || txt.includes('cute') || txt.includes('sweet')) {
+                state.mood = 'Affectionate & Blushing ❤️';
+            } else if (txt.includes('joke') || txt.includes('lol') || txt.includes('funny')) {
+                state.mood = 'Playful & Giggling 🤭';
+            } else {
+                state.mood = 'Sweet & Caring';
+            }
+            document.getElementById('headerMood').textContent = state.mood;
+        }
+
+        // Web Speech Text-to-Speech
+        function speakLastResponse() {
+            const sachiMsgs = state.messages.filter(m => m.sender === 'sachi');
+            if (!sachiMsgs.length) return;
+            const lastMsg = sachiMsgs[sachiMsgs.length - 1].text;
+            
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(lastMsg);
+                utterance.pitch = 1.2;
+                utterance.rate = 1.0;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Persona Customizer Functions
+        function selectAvatar(url) {
+            state.persona.avatar = url;
+            document.querySelectorAll('.avatar-option').forEach(btn => {
+                const img = btn.querySelector('img');
+                if (img && img.src === url) {
+                    btn.classList.add('border-rose-500');
+                    btn.classList.remove('border-transparent');
+                } else {
+                    btn.classList.remove('border-rose-500');
+                    btn.classList.add('border-transparent');
+                }
+            });
+            renderUI();
+        }
+
+        function savePersonaSettings() {
+            state.persona.name = document.getElementById('personaName').value.trim() || 'Sachi';
+            state.persona.relationship = document.getElementById('personaRelationship').value;
+            state.persona.bio = document.getElementById('personaBio').value.trim();
+            state.persona.memoryFeed = document.getElementById('personaMemoryFeed').value.trim();
+
+            const selectedTraits = [];
+            document.querySelectorAll('.trait-checkbox:checked').forEach(cb => selectedTraits.push(cb.value));
+            state.persona.traits = selectedTraits;
+
+            saveState();
+            renderUI();
+            closeDrawer();
+        }
+
+        function setTheme(themeKey, label) {
+            state.currentTheme = themeKey;
+            document.getElementById('currentThemeLabel').textContent = label;
+            document.getElementById('appBody').className = `h-full bg-slate-950 text-slate-100 theme-${themeKey} transition-colors duration-300 flex flex-col overflow-hidden`;
+        }
+
+        function clearChat() {
+            state.messages = [{
+                sender: 'sachi',
+                text: `Fresh start! What would you like to talk about today? ❤️`,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            }];
+            renderMessages();
+            saveState();
+        }
+
+        function exportChat() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.messages, null, 2));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", `chat_with_${state.persona.name}.json`);
+            document.body.appendChild(dlAnchorElem);
+            dlAnchorElem.click();
+            dlAnchorElem.remove();
+        }
+
+        // Persistence
+        function saveState() {
+            try {
+                localStorage.setItem('sachi_companion_state', JSON.stringify(state));
+            } catch (e) {
+                console.warn('Storage saving unavailable:', e);
+            }
+        }
+
+        function loadSavedState() {
+            try {
+                const saved = localStorage.getItem('sachi_companion_state');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    Object.assign(state.persona, parsed.persona);
+                    if (parsed.messages && parsed.messages.length) state.messages = parsed.messages;
+                }
+            } catch (e) {
+                console.warn('Storage loading failed:', e);
+            }
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/[&<>"']/g, function(m) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                }[m];
+            });
+        }
+    </script>
+</body>
+</html>
